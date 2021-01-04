@@ -234,10 +234,16 @@ class Client:
 
         return report_definition
 
+    # by default, program should re-raise exceptions on giveup,
+    # or else program ends with code 0 when it failed
+    def on_giveup_handler(details):
+        raise Exception(f"Gave up! Details: {details}")
+
     @backoff.on_exception(backoff.expo,
                           (HttpError, socket.timeout),
                           max_tries=10,
-                          giveup=is_fatal_error)
+                          giveup=is_fatal_error,
+                          on_giveup=on_giveup_handler)
     def query_api(self, start_date, end_date, report_definition, pageToken=None, segment_id=None):
         """Queries the Analytics Reporting API V4.
 
